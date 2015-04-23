@@ -6,6 +6,7 @@
 
 char *host_name = NULL;
 static pthread_mutex_t *ssl_lock = NULL;
+int running_threads = 0;
 
 void locking_function(int mode, int type, char *file, int line)
 {
@@ -61,6 +62,7 @@ static inline uint32_t ip2int(char *ip){
 
 
 void *findIP(void *IP){
+    running_threads++;
     uint32_t ip = *(uint32_t *)IP;
 
     unsigned char bytes[4];
@@ -107,6 +109,7 @@ void *findIP(void *IP){
 end:
     BIO_free_all(bio);
     SSL_CTX_free(ctx);
+    running_threads = running_threads - 1;
     return NULL;
 }
 
@@ -138,6 +141,11 @@ int main(int argc,char *argv[]){
     uint32_t count = 0;
     
     for(uint32_t ip = startip_int;ip < endip_int;ip++){
+waithread:
+        if(running_threads > 50){
+            sleep(1);
+            goto waithread;
+        }
         pthread_t t;
         ip_array[count] = ip;
         pthread_create(&t, NULL, findIP, &ip_array[count]);
