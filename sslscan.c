@@ -1,5 +1,6 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+#include <stdint.h>
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 #include <pthread.h>
